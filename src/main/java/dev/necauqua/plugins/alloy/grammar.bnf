@@ -1,0 +1,33 @@
+{
+  parserClass="dev.necauqua.plugins.alloy.parser.SimpleParser"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiImplClassSuffix="Impl"
+  psiPackage="dev.necauqua.plugins.alloy.psi"
+  psiImplPackage="dev.necauqua.plugins.alloy.psi.impl"
+
+  elementTypeHolderClass="dev.necauqua.plugins.alloy.psi.Types"
+  elementTypeClass="dev.necauqua.plugins.alloy.ElementType"
+  tokenTypeClass="dev.necauqua.plugins.alloy.TokenType"
+
+  psiImplUtilClass="dev.necauqua.plugins.alloy.psi.impl.PsiImplUtil"
+
+  tokens = [
+    "INTEGER";
+    "LBRACE"; "RBRACE"; "LBRACKET"; "RBRACKET";
+    "ARROW";
+
+    "K_ABSTRACT"; "K_ALL"; "K_AND"; "K_AS"; "K_ASSERT"; "K_BUT"; "K_CHECK"; "K_DISJ"; "K_DISJOINT";
+    "K_ELSE"; "K_ENUM"; "K_EXACTLY"; "K_EXH"; "K_EXHAUSTIVE"; "K_EXPECT"; "K_EXTENDS"; "K_FACT"; "K_FOR";
+    "K_FUN"; "K_IDEN"; "K_IFF"; "K_IMPLIES"; "K_IN"; "K_INT_C"; "K_INT"; "K_LET"; "K_LONE"; "K_MODULE"; "K_NO";
+    "K_NONE"; "K_NOT"; "K_ONE"; "K_OPEN"; "K_OR"; "K_PART"; "K_PARTITION"; "K_PRED"; "K_PRIVATE"; "K_RUN";
+    "K_SEQ"; "K_SET"; "K_SIG"; "K_SOME"; "K_STRING"; "K_SUM"; "K_THIS"; "K_UNIV"
+  ]
+}
+
+simpleFile ::= item_*
+
+private item_ ::= (sigDecl|COMMENT|WHITESPACE)
+
+sigDecl ::= K_ABSTRACT? (K_LONE | K_SOME | K_ONE)? K_SIG ((NAME COMMA)* NAME) (K_EXTENDS QUAL_NAME | K_IN NAME (PLUS QUAL_NAME)*)? LBRACE /*sigBody*/ RBRACE /*sigFact?*/

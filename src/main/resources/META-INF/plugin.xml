@@ -1,0 +1,82 @@
+<!-- `url` specifies the URL of the plugin homepage (can be opened from "Plugins" settings dialog) -->
+<idea-plugin url="https://necauqua.dev/projects/AlloyIJ">
+
+    <!-- Plugin name. It should be short and descriptive but does
+         not have to be identical to the name of the JAR file.
+         Displayed in the "Plugins" settings dialog and the plugin repository Web interface. -->
+    <name>Alloy</name>
+
+    <!-- Unique identifier of the plugin. Should be FQN.
+         Cannot be changed between the plugin versions.
+         If not specified, assumed to be equal to <name>. This can have brittle results. -->
+    <id>dev.necauqua.plugins.alloy</id>
+
+    <!-- Description of the plugin.
+         Should be short and to the point.
+         Start the description with a verb in present simple form such as
+         "integrates", "synchronizes", "adds support for" or "lets you view".
+         Don’t use marketing adjectives like “simple”, “lightweight”, or “professional”.
+         Don’t repeat the name of the plugin.
+         For plugins that add language/platform/framework support, the description MUST specify
+         the version of the corresponding language/platform/framework.
+         Don't mention the IDE compatibility. E.g. don't say "Adds support to IntelliJ IDEA for..."
+         Displayed in the "Plugins" settings dialog and the plugin repository Web interface.
+         Simple HTML elements can be included between <![CDATA[  ]]> tags.  -->
+    <!--    <description></description>-->
+
+    <!-- Description of changes in the latest version of the plugin.
+         Displayed in the "Plugins" settings dialog and the plugin repository Web interface.
+         Simple HTML elements can be included between <![CDATA[  ]]> tags.  -->
+    <!--    <change-notes></change-notes>-->
+
+    <!-- Plugin version
+         Recommended format is BRANCH.BUILD.FIX (MAJOR.MINOR.FIX)
+         Displayed in the "Plugins" settings dialog and the plugin repository Web interface.  -->
+    <version>0.1.0</version>
+
+    <!-- The vendor of the plugin.
+         The optional "url" attribute specifies the URL of the vendor homepage.
+         The optional "email" attribute specifies the e-mail address of the vendor.
+         Displayed in the "Plugins" settings dialog and the plugin repository Web interface. -->
+    <vendor url="https://necauqua.dev" email="self@necauqua.dev">Anton "necauqua" Bulakh</vendor>
+
+    <!-- Mandatory dependencies on plugins or modules.
+         The FQN module names in <depends> elements are used to determine IDE compatibility for the plugin.
+         Include at least the module shown below to indicate compatibility with IntelliJ Platform-based products.
+         Also include dependencies on other plugins as needed.
+         See "Compatibility with Multiple Products" and "Plugin Dependencies" for more information.  -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Minimum and maximum build of IDE compatible with the plugin -->
+    <idea-version since-build="193" until-build="193.*"/>
+
+    <!-- Resource bundle (/messages/MyPluginBundle.properties) to be used
+         with `key` attributes in extension points and implicit keys like
+         `action.[pluginID].[ActionID].text` -->
+    <!--    <resource-bundle>messages.MyPluginBundle</resource-bundle>-->
+
+    <!-- Actions   -->
+    <!--    <actions>-->
+    <!--        <action id="VssIntegration.GarbageCollection" class="com.foo.impl.CollectGarbage" text="Collect _Garbage"-->
+    <!--                description="Run garbage collector">-->
+    <!--            <keyboard-shortcut first-keystroke="control alt G" second-keystroke="C" keymap="$default"/>-->
+    <!--        </action>-->
+    <!--    </actions>-->
+
+    <!-- Application-level listeners -->
+    <!--    <applicationListeners>-->
+    <!--        <listener class="com.foo.impl.MyListener" topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>-->
+    <!--    </applicationListeners>-->
+
+    <!--    &lt;!&ndash; Project-level listeners &ndash;&gt;-->
+    <!--    <projectListeners>-->
+    <!--        <listener class="com.foo.impl.MyToolwindowListener"-->
+    <!--                  topic="com.intellij.openapi.wm.ex.ToolWindowManagerListener"/>-->
+    <!--    </projectListeners>-->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType implementationClass="dev.necauqua.plugins.alloy.AlloyFileType" fieldName="INSTANCE" language="alloy" name="alloy"/>
+        <lang.parserDefinition implementationClass="dev.necauqua.plugins.alloy.SimpleParserDefinition" language="alloy"/>
+        <lang.syntaxHighlighterFactory implementationClass="dev.necauqua.plugins.alloy.AlsSyntaxHighlighterFactory" language="alloy"/>
+    </extensions>
+</idea-plugin>
