@@ -3,3 +3,7 @@
 /.gradle
 /build
 /out
+
+/src/main/gen
+/idea-flex.skeleton
+/jflex-*.jar

@@ -1,5 +1,5 @@
 {
-  parserClass="dev.necauqua.plugins.alloy.parser.SimpleParser"
+  parserClass="dev.necauqua.plugins.alloy.parser.AlloyParser"
 
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
@@ -14,119 +14,149 @@
   psiImplUtilClass="dev.necauqua.plugins.alloy.psi.impl.PsiImplUtil"
 
   tokens = [
-    "COMMENT"
+    "BLOCK_COMMENT"
+    "C_LINE_COMMENT"
+    "LINE_COMMENT"
+
+    "K_EXH"
+    "K_INT"
+    "K_PART"
+    "K_INT_C"
+    "K_STRING"
+    "K_EXPECT"
+    "K_DISJOINT"
+    "K_PARTITION"
+    "K_EXHAUSTIVE"
     "K_SEQ"
     "K_ENUM"
-    "K_PRIVALTE"
-
+    "K_PRIVATE"
   ]
 
-  extends(".*Op")=expr
+  extends(".*_expr")=expr
 }
 
-simpleFile ::= moduleDecl? import* paragraph*
+alloy_module ::= module_decl? import* paragraph*
 
-moduleDecl ::= K_MODULE qualName (NAME (NAME COMMA)*)?
-import ::= K_OPEN qualName (LBRACKET (qualName (COMMA qualName)*)? RBRACKET)?(K_AS NAME)?
+module_decl ::= K_MODULE qual_name (NAME (NAME COMMA)*)?
+import ::= K_OPEN qual_name (LBRACKET (qual_name (COMMA qual_name)*)? RBRACKET)?(K_AS NAME)?
 
-paragraph ::= sigDecl | factDecl | predDecl | funDecl | assertDecl | cmdDecl
+paragraph ::= sig_decl | fact_decl | pred_decl | fun_decl | assert_decl | cmd_decl
 
-sigDecl ::= K_ABSTRACT? mult? K_SIG NAME (COMMA NAME)* sigExt? LBRACE (decl (COMMA decl)*)? RBRACE block?
-sigExt ::= K_EXTENDS qualName | K_IN qualName (PLUS qualName)*
+sig_decl ::= K_ABSTRACT? mult? K_SIG NAME (COMMA NAME)* sig_ext? LBRACE (decl (COMMA decl)*)? RBRACE block_expr?
+private sig_ext ::= K_EXTENDS qual_name | K_IN qual_name (PLUS qual_name)*
 mult ::= K_LONE | K_SOME | K_ONE
 
 decl ::= K_DISJ? NAME (COMMA NAME)* COLON K_DISJ? expr
-factDecl ::= K_FACT NAME? block
-predDecl ::= K_PRED (qualName DOT)? NAME paraDecls? block
-funDecl ::= K_FUN (qualName DOT)? NAME paraDecls? COLON expr { expr }
+fact_decl ::= K_FACT NAME? block_expr
+pred_decl ::= K_PRED (qual_name DOT)? NAME para_decls? block_expr
+fun_decl ::= K_FUN (qual_name DOT)? NAME para_decls? COLON expr { expr }
 
-paraDecls ::= LPAREN (decl (COMMA decl)*)? RPAREN | LBRACKET (decl (COMMA decl)*)? RBRACKET
+para_decls ::= LPAREN (decl (COMMA decl)*)? RPAREN | LBRACKET (decl (COMMA decl)*)? RBRACKET
 
-assertDecl ::= K_ASSERT NAME? block
-cmdDecl ::= (NAME COLON)? (K_RUN | K_CHECK)? (qualName | block)? scope?
+assert_decl ::= K_ASSERT NAME? block_expr
+
+cmd_decl ::= (NAME COLON)? (K_RUN | K_CHECK) (qual_name | block_expr)? scope?
 
 scope ::= K_FOR INTEGER (K_BUT typescope (COMMA typescope)*)? | K_FOR typescope (COMMA typescope)*
-typescope ::= K_EXACTLY? INTEGER qualName
+typescope ::= K_EXACTLY? INTEGER qual_name
 
-//expr ::= const | qualName | AT NAME | K_THIS
-//  | unOp expr | expr binOp expr | expr arrowOp expr
+//expr ::= const | qual_name | AT NAME | K_THIS
+//  | un_op expr | expr bin_op expr | expr arrow_op expr
 //  | expr LBRACKET (expr (COMMA expr)*)? RBRACKET
-//  | expr (NOT_OP | K_NOT) compareOp expr
+//  | expr (NOT_OP | K_NOT) compare_op expr
 //  | expr (FAT_ARROW | K_IMPLIES) expr K_ELSE expr
-//  | K_LET letDecl (COMMA letDecl)* blockOrBar
-//  | quant decl (COMMA decl)* blockOrBar
-//  | LBRACE decl (COMMA decl)* blockOrBar RBRACE
+//  | K_LET let_decl (COMMA let_decl)* block_or_bar
+//  | quant decl (COMMA decl)* block_or_bar
+//  | LBRACE decl (COMMA decl)* block_or_bar RBRACE
 //  | LPAREN expr RPAREN
 //  | block
-//binOp ::= DISJ | K_OR | CONJ | K_AND | LT EQ GT | K_IFFF
+//const ::= MINUS? INTEGER | K_NONE | K_UNIV | K_IDEN
+//un_op ::= NOT_OP | K_NOT | K_NO | mult | K_SET | SHARP | TILDE | MUL | HAT
+//bin_op ::= DISJ | K_OR | CONJ | K_AND | LT EQ GT | K_IFFF
 //  | FAT_ARROW | K_IMPLIES | AND | PLUS | MINUS | REL_OVERRIDE
 //  | LRESTRICT | RRESTRICT | DOT
-//arrowOp ::= (mult | K_SET)? ARROW (mult | K_SET)?
-//compareOp ::= K_IN | EQ | LT | GT | LE | GE
+//arrow_op ::= (mult | K_SET)? ARROW (mult | K_SET)?
+//compare_op ::= K_IN | EQ | LT | GT | LE | GE
 
-const ::= MINUS? INTEGER | K_NONE | K_UNIV | K_IDEN
+let_decl ::= NAME EQ expr
+quant ::= K_ALL | K_NO | K_SUM | mult
+qual_name ::= (K_THIS NAME_SEP)? (NAME NAME_SEP)* NAME
 
-private primaryGroup ::= const | AT NAME | K_THIS | qualName | LPAREN expr RPAREN
+// --- commented stuff from above rewritten for LR to work,
+// --- also specifying the Alloy operator precedence
 
-private highSetOpGroup ::= tildeOp | mulOp | hatOp
-dotJoinOp ::= expr DOT expr
-boxJoinOp ::= expr LBRACKET (expr (COMMA expr)*)? RBRACKET
-private restrictionOpGroup ::= lrestrictOp | rrestrictOp
-arrowProductOp ::= expr (mult | K_SET)? ARROW (mult | K_SET)? expr
-intersectionOp ::= expr JOIN expr
-overrideOp     ::= expr REL_OVERRIDE expr
-cardinalityOp  ::= SHARP expr
-private lowSetOpGroup ::= unionOp | diffOp
-quantifierOp ::= (K_NO | K_SOME | K_LONE | K_ONE | K_SET) expr
-negationOp ::= (NOT_OP | K_NOT) expr
-private comparsionGroup ::= inOp | eqOp | ltOp | gtOp | leOp | geOp
-conjunctionOp ::= expr (AND | K_AND) expr
-implicationOp ::= expr (FAT_ARROW | K_IMPLIES) expr (K_ELSE expr)? {rightAssociative=true}
-biimplicationOp ::= expr (LT EQ GT | K_IFF) expr
-disjunctionOp ::= expr (OR | K_OR) expr
-let ::= K_LET (NAME EQ expr) (COMMA letDecl)* blockOrBar
-quantifications ::= (K_ALL | K_NO | K_SUM | mult) decl (COMMA decl)* blockOrBar
+  tilde_expr ::= TILDE expr
+  mul_expr ::= MUL expr
+  hat_expr ::= HAT expr
+private high_set_op_group ::= tilde_expr | mul_expr | hat_expr
 
-tildeOp ::= TILDE expr
-mulOp ::= MUL expr
-hatOp ::= HAT expr
-lrestrictOp ::= expr LRESTRICT expr
-rrestrictOp ::= expr RRESTRICT expr
-unionOp ::= expr PLUS expr
-diffOp ::= expr MINUS expr
-inOp ::= expr K_IN expr
-eqOp ::= expr EQ expr
-ltOp ::= expr LT expr
-gtOp ::= expr GT expr
-leOp ::= expr LE expr
-geOp ::= expr GE expr
+dot_join_expr ::= expr DOT expr
+box_join_expr ::= expr LBRACKET (expr (COMMA expr)*)? RBRACKET
+
+  left_restrict_expr ::= expr LRESTRICT expr
+  right_restrict_expr ::= expr RRESTRICT expr
+private restrictions_group ::= left_restrict_expr | right_restrict_expr
+
+arrow_product_expr ::= expr (mult | K_SET)? ARROW (mult | K_SET)? expr
+intersection_expr ::= expr JOIN expr
+override_expr     ::= expr REL_OVERRIDE expr
+cardinality_expr  ::= SHARP expr
+
+  union_expr ::= expr PLUS expr
+  diff_expr ::= expr MINUS expr
+private low_set_op_group ::= union_expr | diff_expr
+
+quantifier_expr ::= (K_NO | K_SOME | K_LONE | K_ONE | K_SET) expr
+negation_expr ::= (NOT_OP | K_NOT) expr
+
+  in_expr ::= expr K_IN expr
+  eq_expr ::= expr EQ expr
+  lt_expr ::= expr LT expr
+  gt_expr ::= expr GT expr
+  le_expr ::= expr LE expr
+  ge_expr ::= expr GE expr
+private comparsion_group ::= in_expr | eq_expr | lt_expr | gt_expr | le_expr | ge_expr
+
+conjunction_expr ::= expr (AND | K_AND) expr
+implication_expr ::= expr (FAT_ARROW | K_IMPLIES) expr (K_ELSE expr)? {rightAssociative=true}
+biimplication_expr ::= expr (LT EQ GT | K_IFF) expr
+disjunction_expr ::= expr (OR | K_OR) expr
+let_expr ::= K_LET let_decl (COMMA let_decl)* (block_expr | BAR expr)
+quantification_expr ::= quant decl (COMMA decl)* (block_expr | BAR expr)
+
+  const_expr ::= MINUS? INTEGER | K_NONE | K_UNIV | K_IDEN
+  ident_expr ::= AT NAME | K_THIS | qual_name
+  parens_expr ::= LPAREN expr RPAREN
+
+decls_expr ::= LBRACE decl (COMMA decl)* (block_expr | BAR expr) RBRACE
+
+block_expr ::= LBRACE expr* RBRACE
+
+// tightest is lowest I guess (I am not yet entirely sure, but it works that way)
 
 expr ::=
-    highSetOpGroup
-  | dotJoinOp
-  | boxJoinOp
-  | restrictionOpGroup
-  | arrowProductOp
-  | intersectionOp
-  | overrideOp
-  | cardinalityOp
-  | lowSetOpGroup
-  | quantifierOp
-  | negationOp
-  | comparsionGroup
-  | conjunctionOp
-  | implicationOp
-  | biimplicationOp
-  | disjunctionOp
-  | let
-  | quantifications
-  | primaryGroup
+    parens_expr
 
-  | LBRACE decl (COMMA decl)* blockOrBar RBRACE
-  | block
+  | quantification_expr
+  | let_expr
+  | disjunction_expr
+  | biimplication_expr
+  | implication_expr
+  | conjunction_expr
+  | comparsion_group
+  | negation_expr
+  | quantifier_expr
+  | low_set_op_group
+  | cardinality_expr
+  | override_expr
+  | intersection_expr
+  | arrow_product_expr
+  | restrictions_group
+  | box_join_expr
+  | dot_join_expr
+  | high_set_op_group
 
-block ::= LBRACE expr* RBRACE
-blockOrBar ::= block | BAR expr
-
-qualName ::= (K_THIS NAME_SEP)? (NAME NAME_SEP)* NAME
-
+  | const_expr
+  | ident_expr
+  | block_expr
+  | decls_expr

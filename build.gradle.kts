@@ -18,7 +18,6 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.61")
-    implementation("org.alloytools:org.alloytools.alloy.core:5.1.0-SHAPSHOT")
 }
 
 group = "dev.necauqua.plugins"

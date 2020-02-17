@@ -76,7 +76,13 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType implementationClass="dev.necauqua.plugins.alloy.AlloyFileType" fieldName="INSTANCE" language="alloy" name="alloy"/>
-        <lang.parserDefinition implementationClass="dev.necauqua.plugins.alloy.SimpleParserDefinition" language="alloy"/>
-        <lang.syntaxHighlighterFactory implementationClass="dev.necauqua.plugins.alloy.AlsSyntaxHighlighterFactory" language="alloy"/>
+        <lang.parserDefinition implementationClass="dev.necauqua.plugins.alloy.ParserDefinition" language="alloy"/>
+        <lang.syntaxHighlighterFactory implementationClass="dev.necauqua.plugins.alloy.SyntaxHighlighterFactory" language="alloy"/>
+        <colorSettingsPage implementation="dev.necauqua.plugins.alloy.ColorSettingsPage"/>
+        <completion.contributor implementationClass="dev.necauqua.plugins.alloy.SimpleCompletionContributor" language="alloy"/>
+        <lang.braceMatcher implementationClass="dev.necauqua.plugins.alloy.BraceMatcher" language="alloy"/>
+        <lang.commenter implementationClass="dev.necauqua.plugins.alloy.Commenter" language="alloy"/>
+
+        <lang.foldingBuilder implementationClass="dev.necauqua.plugins.alloy.FoldingBuilder" language="alloy"/>
     </extensions>
 </idea-plugin>
