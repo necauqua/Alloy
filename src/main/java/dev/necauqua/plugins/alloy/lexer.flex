@@ -23,23 +23,16 @@ import dev.necauqua.plugins.alloy.psi.Types;
 %eof{  return;
 %eof}
 
+// any usable combination is allowed
 EOL         = \n | \r\n | \r
-WHITE_SPACE = {EOL} | [ \t\f]
 
-/* comments */
-COMMENT = {TRADITIONAL_COMMENT} | {LINE_COMMENT}
+WHITE_SPACE = {EOL} | [ \t]
 
-TRADITIONAL_COMMENT = "/*" ~"*/"
-LINE_COMMENT        = ("//" | "--") [^\n\r]* {EOL}?
+COMMENT = ("/*" ~"*/") | (("//" | "--") [^\n\r]* {EOL}?)
 
+NAME = [a-zA-Z$%?!_'\"] [a-zA-Z0-9$%?!_'\"]*
 
-FIRST_NAME_CHAR = [a-zA-Z$%?!_'\"]
-NAME_CHAR = [a-zA-Z0-9$%?!_'\"]
-NAME = {FIRST_NAME_CHAR} {NAME_CHAR}*
-
-QUAL_NAME = ({NAME} "/")* {NAME}
-
-INTEGER = \-? (0 | [1-9][0-9]*)
+INTEGER = (0 | [1-9][0-9]*)
 
 %state WHITESPACE
 
@@ -94,19 +87,45 @@ INTEGER = \-? (0 | [1-9][0-9]*)
     "this"         { return Types.K_THIS; }
     "univ"         { return Types.K_UNIV; }
 
-    {QUAL_NAME}    { return Types.QUAL_NAME; }
-    {NAME}         { return Types.NAME; }
-    {INTEGER}      { return Types.INTEGER; }
+    // Alloy Language Specification, appendix B:
+    // The following sequences of characters are recognized as single tokens:
+    "=>"           { return Types.FAT_ARROW; }
+    ">="           { return Types.GE; }
+    "<="           { return Types.LE; }
+    "->"           { return Types.ARROW; }
+    "<:"           { return Types.LRESTRICT; }
+    ":>"           { return Types.RRESTRICT; }
+    "++"           { return Types.REL_OVERRIDE; }
+    "&&"           { return Types.AND; }
+    "||"           { return Types.OR; }
 
+    "/"            { return Types.NAME_SEP; }
+    ":"            { return Types.COLON; }
+    "."            { return Types.DOT; }
     ","            { return Types.COMMA; }
     "{"            { return Types.LBRACE; }
     "}"            { return Types.RBRACE; }
     "["            { return Types.LBRACKET; }
     "]"            { return Types.RBRACKET; }
-    "->"           { return Types.ARROW; }
+    "("            { return Types.LPAREN; }
+    ")"            { return Types.RPAREN; }
+    "@"            { return Types.AT; }
+    "!"            { return Types.NOT_OP; }
+    "#"            { return Types.SHARP; }
+    "~"            { return Types.TILDE; }
+    "*"            { return Types.MUL; }
+    "+"            { return Types.PLUS; }
+    "-"            { return Types.MINUS; }
+    "^"            { return Types.HAT; }
+    "<"            { return Types.LT; }
+    ">"            { return Types.GT; }
+    "="            { return Types.EQ; }
+    "|"            { return Types.BAR; }
+    "&"            { return Types.JOIN; }
 
+    {NAME}         { return Types.NAME; }
+    {INTEGER}      { return Types.INTEGER; }
     {COMMENT}      { return Types.COMMENT; }
-
     {WHITE_SPACE}+ { return TokenType.WHITE_SPACE; }
 }
 

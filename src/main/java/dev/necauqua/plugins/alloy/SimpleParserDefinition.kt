@@ -16,47 +16,33 @@ import dev.necauqua.plugins.alloy.parser.SimpleParser
 import dev.necauqua.plugins.alloy.psi.Types
 
 
+val WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE)
+val COMMENTS = TokenSet.create(Types.COMMENT)
+val FILE = IFileElementType(AlloyLanguage)
+
 class SimpleParserDefinition : ParserDefinition {
     override fun createLexer(project: Project): Lexer {
+
+        org.all
+
         return FlexAdapter(AlloyLexer())
     }
 
-    override fun getWhitespaceTokens(): TokenSet {
-        return WHITE_SPACES
-    }
+    override fun getWhitespaceTokens(): TokenSet = WHITE_SPACES
 
-    override fun getCommentTokens(): TokenSet {
-        return COMMENTS
-    }
+    override fun getCommentTokens(): TokenSet = COMMENTS
 
-    override fun getStringLiteralElements(): TokenSet {
-        return TokenSet.EMPTY
-    }
+    override fun getStringLiteralElements(): TokenSet = TokenSet.EMPTY
 
-    override fun createParser(project: Project): PsiParser {
-        return SimpleParser()
-    }
+    override fun createParser(project: Project): PsiParser = SimpleParser()
 
-    override fun getFileNodeType(): IFileElementType {
-        return FILE
-    }
+    override fun getFileNodeType(): IFileElementType = FILE
 
-    override fun createFile(viewProvider: FileViewProvider): PsiFile {
-        return AlloyFile(viewProvider)
-    }
+    override fun createFile(viewProvider: FileViewProvider): PsiFile = AlloyFile(viewProvider)
 
-    override fun spaceExistenceTypeBetweenTokens(left: ASTNode, right: ASTNode): ParserDefinition.SpaceRequirements {
-        return ParserDefinition.SpaceRequirements.MAY
-    }
+    override fun spaceExistenceTypeBetweenTokens(left: ASTNode, right: ASTNode): ParserDefinition.SpaceRequirements =
+        ParserDefinition.SpaceRequirements.MAY
 
-    override fun createElement(node: ASTNode): PsiElement {
-        return Types.Factory.createElement(node)
-    }
-
-    companion object {
-        val WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE)
-        val COMMENTS = TokenSet.create(Types.COMMENT)
-        val FILE = IFileElementType(AlloyLanguage)
-    }
+    override fun createElement(node: ASTNode): PsiElement = Types.Factory.createElement(node)
 }
 

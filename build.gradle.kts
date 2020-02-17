@@ -11,21 +11,18 @@ plugins {
     id("org.jetbrains.grammarkit") version "2020.1"
 }
 
-repositories { mavenCentral() }
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.61")
+    implementation("org.alloytools:org.alloytools.alloy.core:5.1.0-SHAPSHOT")
 }
 
 group = "dev.necauqua.plugins"
 version = "0.1.0"
-
-//sourceSets {
-//    val main by getting {
-//        java.srcDir("src/gen")
-//        kotlin.srcDir("src/main/kotlin")
-//        resources.srcDir("src/main/resources")
-//    }
-//}
 
 sourceSets {
     main {

@@ -14,20 +14,119 @@
   psiImplUtilClass="dev.necauqua.plugins.alloy.psi.impl.PsiImplUtil"
 
   tokens = [
-    "INTEGER";
-    "LBRACE"; "RBRACE"; "LBRACKET"; "RBRACKET";
-    "ARROW";
+    "COMMENT"
+    "K_SEQ"
+    "K_ENUM"
+    "K_PRIVALTE"
 
-    "K_ABSTRACT"; "K_ALL"; "K_AND"; "K_AS"; "K_ASSERT"; "K_BUT"; "K_CHECK"; "K_DISJ"; "K_DISJOINT";
-    "K_ELSE"; "K_ENUM"; "K_EXACTLY"; "K_EXH"; "K_EXHAUSTIVE"; "K_EXPECT"; "K_EXTENDS"; "K_FACT"; "K_FOR";
-    "K_FUN"; "K_IDEN"; "K_IFF"; "K_IMPLIES"; "K_IN"; "K_INT_C"; "K_INT"; "K_LET"; "K_LONE"; "K_MODULE"; "K_NO";
-    "K_NONE"; "K_NOT"; "K_ONE"; "K_OPEN"; "K_OR"; "K_PART"; "K_PARTITION"; "K_PRED"; "K_PRIVATE"; "K_RUN";
-    "K_SEQ"; "K_SET"; "K_SIG"; "K_SOME"; "K_STRING"; "K_SUM"; "K_THIS"; "K_UNIV"
   ]
+
+  extends(".*Op")=expr
 }
 
-simpleFile ::= item_*
+simpleFile ::= moduleDecl? import* paragraph*
 
-private item_ ::= (sigDecl|COMMENT|WHITESPACE)
+moduleDecl ::= K_MODULE qualName (NAME (NAME COMMA)*)?
+import ::= K_OPEN qualName (LBRACKET (qualName (COMMA qualName)*)? RBRACKET)?(K_AS NAME)?
 
-sigDecl ::= K_ABSTRACT? (K_LONE | K_SOME | K_ONE)? K_SIG ((NAME COMMA)* NAME) (K_EXTENDS QUAL_NAME | K_IN NAME (PLUS QUAL_NAME)*)? LBRACE /*sigBody*/ RBRACE /*sigFact?*/
+paragraph ::= sigDecl | factDecl | predDecl | funDecl | assertDecl | cmdDecl
+
+sigDecl ::= K_ABSTRACT? mult? K_SIG NAME (COMMA NAME)* sigExt? LBRACE (decl (COMMA decl)*)? RBRACE block?
+sigExt ::= K_EXTENDS qualName | K_IN qualName (PLUS qualName)*
+mult ::= K_LONE | K_SOME | K_ONE
+
+decl ::= K_DISJ? NAME (COMMA NAME)* COLON K_DISJ? expr
+factDecl ::= K_FACT NAME? block
+predDecl ::= K_PRED (qualName DOT)? NAME paraDecls? block
+funDecl ::= K_FUN (qualName DOT)? NAME paraDecls? COLON expr { expr }
+
+paraDecls ::= LPAREN (decl (COMMA decl)*)? RPAREN | LBRACKET (decl (COMMA decl)*)? RBRACKET
+
+assertDecl ::= K_ASSERT NAME? block
+cmdDecl ::= (NAME COLON)? (K_RUN | K_CHECK)? (qualName | block)? scope?
+
+scope ::= K_FOR INTEGER (K_BUT typescope (COMMA typescope)*)? | K_FOR typescope (COMMA typescope)*
+typescope ::= K_EXACTLY? INTEGER qualName
+
+//expr ::= const | qualName | AT NAME | K_THIS
+//  | unOp expr | expr binOp expr | expr arrowOp expr
+//  | expr LBRACKET (expr (COMMA expr)*)? RBRACKET
+//  | expr (NOT_OP | K_NOT) compareOp expr
+//  | expr (FAT_ARROW | K_IMPLIES) expr K_ELSE expr
+//  | K_LET letDecl (COMMA letDecl)* blockOrBar
+//  | quant decl (COMMA decl)* blockOrBar
+//  | LBRACE decl (COMMA decl)* blockOrBar RBRACE
+//  | LPAREN expr RPAREN
+//  | block
+//binOp ::= DISJ | K_OR | CONJ | K_AND | LT EQ GT | K_IFFF
+//  | FAT_ARROW | K_IMPLIES | AND | PLUS | MINUS | REL_OVERRIDE
+//  | LRESTRICT | RRESTRICT | DOT
+//arrowOp ::= (mult | K_SET)? ARROW (mult | K_SET)?
+//compareOp ::= K_IN | EQ | LT | GT | LE | GE
+
+const ::= MINUS? INTEGER | K_NONE | K_UNIV | K_IDEN
+
+private primaryGroup ::= const | AT NAME | K_THIS | qualName | LPAREN expr RPAREN
+
+private highSetOpGroup ::= tildeOp | mulOp | hatOp
+dotJoinOp ::= expr DOT expr
+boxJoinOp ::= expr LBRACKET (expr (COMMA expr)*)? RBRACKET
+private restrictionOpGroup ::= lrestrictOp | rrestrictOp
+arrowProductOp ::= expr (mult | K_SET)? ARROW (mult | K_SET)? expr
+intersectionOp ::= expr JOIN expr
+overrideOp     ::= expr REL_OVERRIDE expr
+cardinalityOp  ::= SHARP expr
+private lowSetOpGroup ::= unionOp | diffOp
+quantifierOp ::= (K_NO | K_SOME | K_LONE | K_ONE | K_SET) expr
+negationOp ::= (NOT_OP | K_NOT) expr
+private comparsionGroup ::= inOp | eqOp | ltOp | gtOp | leOp | geOp
+conjunctionOp ::= expr (AND | K_AND) expr
+implicationOp ::= expr (FAT_ARROW | K_IMPLIES) expr (K_ELSE expr)? {rightAssociative=true}
+biimplicationOp ::= expr (LT EQ GT | K_IFF) expr
+disjunctionOp ::= expr (OR | K_OR) expr
+let ::= K_LET (NAME EQ expr) (COMMA letDecl)* blockOrBar
+quantifications ::= (K_ALL | K_NO | K_SUM | mult) decl (COMMA decl)* blockOrBar
+
+tildeOp ::= TILDE expr
+mulOp ::= MUL expr
+hatOp ::= HAT expr
+lrestrictOp ::= expr LRESTRICT expr
+rrestrictOp ::= expr RRESTRICT expr
+unionOp ::= expr PLUS expr
+diffOp ::= expr MINUS expr
+inOp ::= expr K_IN expr
+eqOp ::= expr EQ expr
+ltOp ::= expr LT expr
+gtOp ::= expr GT expr
+leOp ::= expr LE expr
+geOp ::= expr GE expr
+
+expr ::=
+    highSetOpGroup
+  | dotJoinOp
+  | boxJoinOp
+  | restrictionOpGroup
+  | arrowProductOp
+  | intersectionOp
+  | overrideOp
+  | cardinalityOp
+  | lowSetOpGroup
+  | quantifierOp
+  | negationOp
+  | comparsionGroup
+  | conjunctionOp
+  | implicationOp
+  | biimplicationOp
+  | disjunctionOp
+  | let
+  | quantifications
+  | primaryGroup
+
+  | LBRACE decl (COMMA decl)* blockOrBar RBRACE
+  | block
+
+block ::= LBRACE expr* RBRACE
+blockOrBar ::= block | BAR expr
+
+qualName ::= (K_THIS NAME_SEP)? (NAME NAME_SEP)* NAME
+
