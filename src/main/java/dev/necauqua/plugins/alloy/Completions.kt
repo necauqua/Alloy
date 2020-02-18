@@ -1,6 +1,8 @@
 package dev.necauqua.plugins.alloy
 
 import com.intellij.codeInsight.completion.*
+import com.intellij.codeInsight.highlighting.BraceMatcher
+import com.intellij.codeInsight.highlighting.PairedBraceMatcherAdapter
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.lang.ASTNode
 import com.intellij.lang.BracePair
@@ -37,8 +39,20 @@ class KeywordCompletionProvider(private vararg val keywords: String) : Completio
 class SimpleCompletionContributor : CompletionContributor() {
 
     init {
-        extend(CompletionType.BASIC, topLevel(), KeywordCompletionProvider(*STATEMENT_STARTERS))
+//        extend(CompletionType.BASIC, topLevel(), KeywordCompletionProvider(*STATEMENT_STARTERS))
 //        extend(CompletionType.BASIC, psiElement(Types.NAME), KeywordCompletionProvider(*KEYWORDS))
+        extend(CompletionType.BASIC, topLevel(), object : CompletionProvider<CompletionParameters>() {
+            override fun addCompletions(
+                parameters: CompletionParameters,
+                context: ProcessingContext,
+                result: CompletionResultSet
+            ) {
+                PsiUtils.findSigs(parameters.position.project, parameters.originalFile.virtualFile).forEach {
+                    println(it)
+                    result.addElement(LookupElementBuilder.create(it))
+                }
+            }
+        })
     }
 
     private fun topLevel() = psiElement().withParent(psiFile())
@@ -76,6 +90,8 @@ class BraceMatcher : PairedBraceMatcher {
     }
 }
 
+class AdaptedBraceMatcher : PairedBraceMatcherAdapter(BraceMatcher(), AlloyLanguage)
+
 class Commenter : Commenter {
 
     override fun getLineCommentPrefix(): String? = "-- "
@@ -90,9 +106,14 @@ class Commenter : Commenter {
 class FoldingBuilder : FoldingBuilderEx(), DumbAware {
 
     override fun getPlaceholderText(node: ASTNode): String? =
-            when (node) {
-                is Paragraph -> "todo { ... }"
-                is PsiComment -> (node as PsiComment).text
+            when (node.elementType) {
+                Types.SIG_DECL -> "sig { ... }"
+                Types.FACT_DECL -> "fact { ... }"
+                Types.PRED_DECL -> "pred { ... }"
+                Types.FUN_DECL -> "fun { ... }"
+                Types.ASSERT_DECL -> "assert { ... }"
+                Types.CMD_DECL -> "run { ... }"
+                Types.BLOCK_COMMENT -> (node as PsiComment).text
                         .lineSequence()
                         .map { it.replace(COMMENT_PREFIX, "") }
                         .firstOrNull { it.isNotBlank() }
@@ -106,7 +127,8 @@ class FoldingBuilder : FoldingBuilderEx(), DumbAware {
                     val comment = it.node as PsiComment
                     if (comment.text.startsWith("/*")) FoldingDescriptor(comment, it.textRange) else null
                 }
-        val paragraphs = PsiTreeUtil.findChildrenOfType(root, Paragraph::class.java).asSequence()
+
+        val paragraphs = (root as? AlloyFile)?.paragraphs.orEmpty().asSequence()
                 .map { FoldingDescriptor(it.node, it.textRange) }
 
         return (comments + paragraphs).toList().toTypedArray()

@@ -6,21 +6,16 @@ import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.HighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
-import com.intellij.openapi.editor.markup.EffectType
-import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory
-import com.intellij.openapi.options.colors.AttributesDescriptor
-import com.intellij.openapi.options.colors.ColorDescriptor
+import com.intellij.openapi.options.colors.*
 import com.intellij.openapi.options.colors.ColorSettingsPage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 import dev.necauqua.plugins.alloy.psi.Types
-import java.awt.Color
 import javax.swing.Icon
-
 
 private val BLOCK_COMMENT = arrayOf(createTextAttributesKey("ALLOY_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT))
 private val C_LINE_COMMENT = arrayOf(createTextAttributesKey("ALLOY_C_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT))
@@ -37,8 +32,6 @@ private val DOT = arrayOf(createTextAttributesKey("ALLOY_DOT", DefaultLanguageHi
 
 private val BAD_CHARACTER = arrayOf(createTextAttributesKey("ALLOY_BAD_CHARACTER", HighlighterColors.BAD_CHARACTER))
 
-private val KEK = arrayOf(createTextAttributesKey("ALLOY_KEK", TextAttributes(null, null, Color.green, EffectType.LINE_UNDERSCORE, 0)))
-
 object SyntaxHighlighter : SyntaxHighlighter {
     override fun getTokenHighlights(tokenType: IElementType): Array<out TextAttributesKey> =
         when (tokenType) {
@@ -50,7 +43,6 @@ object SyntaxHighlighter : SyntaxHighlighter {
             Types.LBRACKET, Types.RBRACKET -> BRACKETS
             Types.LPAREN, Types.RPAREN -> PARENTHESES
             Types.DOT -> DOT
-            Types.QUANT -> KEK
             TokenType.BAD_CHARACTER -> BAD_CHARACTER
             else -> if (tokenType.toString().startsWith("K_")) KEYWORD else emptyArray()
         }
@@ -64,7 +56,7 @@ class SyntaxHighlighterFactory : SyntaxHighlighterFactory() {
 }
 
 class ColorSettingsPage : ColorSettingsPage {
-    override fun getIcon(): Icon? = AlloyFileType.icon
+    override fun getIcon(): Icon? = AlloyFileType.ICON
 
     override fun getHighlighter(): SyntaxHighlighter = SyntaxHighlighter
 

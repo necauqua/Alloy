@@ -4,13 +4,24 @@ import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.tree.IElementType
+import dev.necauqua.plugins.alloy.psi.*
 
 class TokenType(debugName: String) : IElementType(debugName, AlloyLanguage)
 
 class ElementType(debugName: String) : IElementType(debugName, AlloyLanguage)
 
 class AlloyFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, AlloyLanguage) {
+
+    val moduleDecl: ModuleDecl?
+        get() = findChildByClass(ModuleDecl::class.java)
+
+    val imports: Array<Import>
+        get() = findChildrenByClass(Import::class.java)
+
+    val paragraphs: Array<Paragraph>
+        get() = findChildrenByClass(Paragraph::class.java)
+
     override fun getFileType(): FileType = AlloyFileType
 
-    override fun toString(): String = "Simple File"
+    override fun toString(): String = "Alloy File"
 }

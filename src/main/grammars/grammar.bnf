@@ -11,7 +11,7 @@
   elementTypeClass="dev.necauqua.plugins.alloy.ElementType"
   tokenTypeClass="dev.necauqua.plugins.alloy.TokenType"
 
-  psiImplUtilClass="dev.necauqua.plugins.alloy.psi.impl.PsiImplUtil"
+  psiImplUtilClass="dev.necauqua.plugins.alloy.psi.PsiImplUtil"
 
   tokens = [
     "BLOCK_COMMENT"
@@ -33,34 +33,36 @@
   ]
 
   extends(".*_expr")=expr
+
+  mixin("(?:sig|fact|pred|fun|assert|cmd)_decl") = "dev.necauqua.plugins.alloy.psi.Paragraph"
 }
 
 alloy_module ::= module_decl? import* paragraph*
 
-module_decl ::= K_MODULE qual_name (NAME (NAME COMMA)*)?
-import ::= K_OPEN qual_name (LBRACKET (qual_name (COMMA qual_name)*)? RBRACKET)?(K_AS NAME)?
+module_decl ::= K_MODULE qual_name (simple_name (simple_name COMMA)*)?
+import ::= K_OPEN qual_name (LBRACKET (qual_name (COMMA qual_name)*)? RBRACKET)? (K_AS simple_name)?
 
-paragraph ::= sig_decl | fact_decl | pred_decl | fun_decl | assert_decl | cmd_decl
+private paragraph ::= sig_decl | fact_decl | pred_decl | fun_decl | assert_decl | cmd_decl
 
-sig_decl ::= K_ABSTRACT? mult? K_SIG NAME (COMMA NAME)* sig_ext? LBRACE (decl (COMMA decl)*)? RBRACE block_expr?
+sig_decl ::= K_ABSTRACT? mult? K_SIG simple_name (COMMA simple_name)* sig_ext? LBRACE (decl (COMMA decl)*)? RBRACE block_expr?
 private sig_ext ::= K_EXTENDS qual_name | K_IN qual_name (PLUS qual_name)*
 mult ::= K_LONE | K_SOME | K_ONE
 
-decl ::= K_DISJ? NAME (COMMA NAME)* COLON K_DISJ? expr
-fact_decl ::= K_FACT NAME? block_expr
-pred_decl ::= K_PRED (qual_name DOT)? NAME para_decls? block_expr
-fun_decl ::= K_FUN (qual_name DOT)? NAME para_decls? COLON expr { expr }
+decl ::= K_DISJ? simple_name (COMMA simple_name)* COLON K_DISJ? expr
+fact_decl ::= K_FACT simple_name? block_expr
+pred_decl ::= K_PRED (qual_name DOT)? simple_name para_decls? block_expr
+fun_decl ::= K_FUN (qual_name DOT)? simple_name para_decls? COLON expr { expr }
 
 para_decls ::= LPAREN (decl (COMMA decl)*)? RPAREN | LBRACKET (decl (COMMA decl)*)? RBRACKET
 
-assert_decl ::= K_ASSERT NAME? block_expr
+assert_decl ::= K_ASSERT simple_name? block_expr
 
-cmd_decl ::= (NAME COLON)? (K_RUN | K_CHECK) (qual_name | block_expr)? scope?
+cmd_decl ::= (simple_name COLON)? (K_RUN | K_CHECK) (qual_name | block_expr)? scope?
 
 scope ::= K_FOR INTEGER (K_BUT typescope (COMMA typescope)*)? | K_FOR typescope (COMMA typescope)*
 typescope ::= K_EXACTLY? INTEGER qual_name
 
-//expr ::= const | qual_name | AT NAME | K_THIS
+//expr ::= const | qual_name | AT name | K_THIS
 //  | un_op expr | expr bin_op expr | expr arrow_op expr
 //  | expr LBRACKET (expr (COMMA expr)*)? RBRACKET
 //  | expr (NOT_OP | K_NOT) compare_op expr
@@ -78,9 +80,19 @@ typescope ::= K_EXACTLY? INTEGER qual_name
 //arrow_op ::= (mult | K_SET)? ARROW (mult | K_SET)?
 //compare_op ::= K_IN | EQ | LT | GT | LE | GE
 
-let_decl ::= NAME EQ expr
+let_decl ::= simple_name EQ expr
 quant ::= K_ALL | K_NO | K_SUM | mult
-qual_name ::= (K_THIS NAME_SEP)? (NAME NAME_SEP)* NAME
+
+qual_name ::= qual_prefix simple_name
+qual_prefix ::= (K_THIS NAME_SEP)? (qual_name_part NAME_SEP)*
+qual_name_part ::= NAME {
+    implements = "com.intellij.psi.PsiNamedElement"
+    methods=[getReference getName setName]
+}
+simple_name ::= NAME {
+    implements = "com.intellij.psi.PsiNamedElement"
+    methods=[getReference getName setName]
+}
 
 // --- commented stuff from above rewritten for LR to work,
 // --- also specifying the Alloy operator precedence
@@ -125,7 +137,7 @@ let_expr ::= K_LET let_decl (COMMA let_decl)* (block_expr | BAR expr)
 quantification_expr ::= quant decl (COMMA decl)* (block_expr | BAR expr)
 
   const_expr ::= MINUS? INTEGER | K_NONE | K_UNIV | K_IDEN
-  ident_expr ::= AT NAME | K_THIS | qual_name
+  ident_expr ::= AT simple_name | K_THIS | qual_name
   parens_expr ::= LPAREN expr RPAREN
 
 decls_expr ::= LBRACE decl (COMMA decl)* (block_expr | BAR expr) RBRACE
@@ -136,6 +148,10 @@ block_expr ::= LBRACE expr* RBRACE
 
 expr ::=
     parens_expr
+  | decls_expr
+  | block_expr
+  | ident_expr
+  | const_expr
 
   | quantification_expr
   | let_expr
@@ -156,7 +172,3 @@ expr ::=
   | dot_join_expr
   | high_set_op_group
 
-  | const_expr
-  | ident_expr
-  | block_expr
-  | decls_expr

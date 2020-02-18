@@ -28,7 +28,6 @@ EOL         = \n | \r\n | \r
 
 WHITE_SPACE = {EOL} | [ \t]
 
-COMMENT = BLOCK_COMMENT | C_LINE_COMMENT | LINE_COMMENT
 BLOCK_COMMENT = "/*" ~"*/"
 C_LINE_COMMENT = "//" [^\n\r]* {EOL}?
 LINE_COMMENT = "--" [^\n\r]* {EOL}?
@@ -124,7 +123,7 @@ INTEGER = (0 | [1-9][0-9]*)
     "|"              { return Types.BAR; }
     "&"              { return Types.JOIN; }
 
-    {NAME}           { return Types.NAME; }
+    {NAME}          { return Types.NAME; }
     {INTEGER}        { return Types.INTEGER; }
 
     {BLOCK_COMMENT}  { return Types.BLOCK_COMMENT; }

@@ -11,13 +11,7 @@ object AlloyLanguage : Language("alloy") {
 
 object AlloyFileType : LanguageFileType(AlloyLanguage) {
 
-    override fun getDefaultExtension(): String = "als"
-
-    override fun getName(): String = "alloy"
-
-    override fun getDescription(): String = "Alloy source file"
-
-    override fun getIcon(): Icon? = object : Icon {
+    val ICON = object : Icon {
         override fun paintIcon(c: Component, g: Graphics, x: Int, y: Int) {
             g.color = Color.gray
             g.fillOval(2, 2, 14, 14)
@@ -30,4 +24,12 @@ object AlloyFileType : LanguageFileType(AlloyLanguage) {
         override fun getIconHeight(): Int = 16
         override fun getIconWidth(): Int = 16
     }
+
+    override fun getDefaultExtension(): String = "als"
+
+    override fun getName(): String = "alloy"
+
+    override fun getDescription(): String = "Alloy source file"
+
+    override fun getIcon(): Icon? = ICON
 }

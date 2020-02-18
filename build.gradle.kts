@@ -1,3 +1,6 @@
+import org.jetbrains.grammarkit.tasks.GenerateLexer
+import org.jetbrains.grammarkit.tasks.GenerateParser
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories { mavenCentral() }
@@ -40,6 +43,27 @@ intellij {
     instrumentCode = true
     version = "2019.3"
 }
+
+
+
+val generateLexer = task<GenerateLexer>("generateLexer") {
+    source = "src/main/grammars/lexer.flex"
+    targetDir = "src/main/gen/dev/necauqua/plugins/alloy"
+    targetClass = "AlloyLexer"
+    purgeOldFiles = true
+}
+
+val generateParser = task<GenerateParser>("generateParser") {
+    source = "src/main/grammars/grammar.bnf"
+    targetRoot = "src/main/gen"
+    pathToPsiRoot = "dev/necauqua/plugins/alloy/psi"
+    pathToParser = "AlloyParser"
+    purgeOldFiles = true
+}
+
+//tasks.withType<KotlinCompile> {
+//    dependsOn(generateLexer, generateParser)
+//}
 
 //patchPluginXml {
 //    version = project.version
