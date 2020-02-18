@@ -1,8 +1,8 @@
 package dev.necauqua.plugins.alloy
 
 import com.intellij.codeInsight.completion.*
-import com.intellij.codeInsight.highlighting.BraceMatcher
 import com.intellij.codeInsight.highlighting.PairedBraceMatcherAdapter
+import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.lang.ASTNode
 import com.intellij.lang.BracePair
@@ -12,6 +12,7 @@ import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.project.DumbAware
+import com.intellij.patterns.PlatformPatterns
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.patterns.PlatformPatterns.psiFile
 import com.intellij.psi.PsiComment
@@ -20,14 +21,13 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.ProcessingContext
-import dev.necauqua.plugins.alloy.psi.Paragraph
 import dev.necauqua.plugins.alloy.psi.Types
-
+import dev.necauqua.plugins.alloy.psi.Types.SIMPLE_NAME
 
 class KeywordCompletionProvider(private vararg val keywords: String) : CompletionProvider<CompletionParameters>() {
 
     override fun addCompletions(parameters: CompletionParameters, context: ProcessingContext, result: CompletionResultSet) {
-        keywords.forEach { keyword -> result.addElement(LookupElementBuilder.create(keyword).bold()) }
+        keywords.forEach { result.addElement(LookupElementBuilder.create(it).bold()) }
     }
 }
 
@@ -39,13 +39,22 @@ class KeywordCompletionProvider(private vararg val keywords: String) : Completio
 class SimpleCompletionContributor : CompletionContributor() {
 
     init {
-//        extend(CompletionType.BASIC, topLevel(), KeywordCompletionProvider(*STATEMENT_STARTERS))
-//        extend(CompletionType.BASIC, psiElement(Types.NAME), KeywordCompletionProvider(*KEYWORDS))
+        extend(CompletionType.BASIC, topLevel(), KeywordCompletionProvider(*STATEMENT_STARTERS))
+
+        val sig = PlatformPatterns.or(
+                psiElement().afterLeaf(psiElement(Types.K_ABSTRACT)),
+                psiElement().afterLeaf(psiElement(Types.K_LONE)),
+                psiElement().afterLeaf(psiElement(Types.K_ONE)),
+                psiElement().afterLeaf(psiElement(Types.K_SOME))
+        )
+
+        extend(CompletionType.BASIC, sig, KeywordCompletionProvider("sig"))
+
         extend(CompletionType.BASIC, topLevel(), object : CompletionProvider<CompletionParameters>() {
             override fun addCompletions(
-                parameters: CompletionParameters,
-                context: ProcessingContext,
-                result: CompletionResultSet
+                    parameters: CompletionParameters,
+                    context: ProcessingContext,
+                    result: CompletionResultSet
             ) {
                 PsiUtils.findSigs(parameters.position.project, parameters.originalFile.virtualFile).forEach {
                     println(it)
@@ -96,8 +105,8 @@ class Commenter : Commenter {
 
     override fun getLineCommentPrefix(): String? = "-- "
 
-    override fun getBlockCommentPrefix(): String? = "/* "
-    override fun getBlockCommentSuffix(): String? = " */"
+    override fun getBlockCommentPrefix(): String? = "/*"
+    override fun getBlockCommentSuffix(): String? = "*/"
 
     override fun getCommentedBlockCommentPrefix(): String? = null
     override fun getCommentedBlockCommentSuffix(): String? = null
@@ -105,14 +114,19 @@ class Commenter : Commenter {
 
 class FoldingBuilder : FoldingBuilderEx(), DumbAware {
 
+    private fun getParagraphPlaceholder(typename: String, node: ASTNode, defaultName: String? = "<unnamed>"): String {
+        val name = node.findChildByType(SIMPLE_NAME)?.psi?.text ?: defaultName
+        return if (name != null) "$typename $name { ... }" else "$typename { ... }"
+    }
+
     override fun getPlaceholderText(node: ASTNode): String? =
             when (node.elementType) {
-                Types.SIG_DECL -> "sig { ... }"
-                Types.FACT_DECL -> "fact { ... }"
-                Types.PRED_DECL -> "pred { ... }"
-                Types.FUN_DECL -> "fun { ... }"
-                Types.ASSERT_DECL -> "assert { ... }"
-                Types.CMD_DECL -> "run { ... }"
+                Types.SIG_DECL -> getParagraphPlaceholder("sig", node)
+                Types.FACT_DECL -> getParagraphPlaceholder("fact", node, defaultName = null) // unnamed facts are ok
+                Types.PRED_DECL -> getParagraphPlaceholder("pred", node)
+                Types.FUN_DECL -> getParagraphPlaceholder("fun", node)
+                Types.ASSERT_DECL -> getParagraphPlaceholder("assert", node)
+                Types.CMD_DECL -> getParagraphPlaceholder("cmd", node)
                 Types.BLOCK_COMMENT -> (node as PsiComment).text
                         .lineSequence()
                         .map { it.replace(COMMENT_PREFIX, "") }

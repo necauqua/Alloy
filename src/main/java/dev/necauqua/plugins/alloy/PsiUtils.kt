@@ -5,6 +5,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.util.PsiTreeUtil
 import dev.necauqua.plugins.alloy.psi.Import
+import dev.necauqua.plugins.alloy.psi.RelDecls
 import dev.necauqua.plugins.alloy.psi.SigDecl
 import groovy.lang.Tuple2
 
@@ -26,7 +27,7 @@ object PsiUtils {
         val root = psiManager.findFile(virtualFile) as? AlloyFile ?: return
         val dir = virtualFile.parent
         for (import in root.imports) {
-            val name = import.qualNameList.first().text
+            val name = import.qualName.text
             if (!known.add(name)) {
                 continue
             }

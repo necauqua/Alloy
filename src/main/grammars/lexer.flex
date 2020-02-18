@@ -127,8 +127,8 @@ INTEGER = (0 | [1-9][0-9]*)
     {INTEGER}        { return Types.INTEGER; }
 
     {BLOCK_COMMENT}  { return Types.BLOCK_COMMENT; }
-    {C_LINE_COMMENT} { return Types.C_LINE_COMMENT; }
-    {LINE_COMMENT}   { return Types.LINE_COMMENT; }
+    {C_LINE_COMMENT} { yypushback(yycharat(yylength() - 2) == '\r' ? 2 : 1); return Types.C_LINE_COMMENT; }
+    {LINE_COMMENT}   { yypushback(yycharat(yylength() - 2) == '\r' ? 2 : 1); return Types.LINE_COMMENT; }
 
     {WHITE_SPACE}+   { return TokenType.WHITE_SPACE; }
 }
