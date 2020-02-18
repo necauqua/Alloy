@@ -44,14 +44,17 @@ import ::= K_OPEN qual_name (LBRACKET (qual_name (COMMA qual_name)*)? RBRACKET)?
 
 private paragraph ::= sig_decl | fact_decl | pred_decl | fun_decl | assert_decl | cmd_decl
 
-sig_decl ::= K_ABSTRACT? mult? K_SIG simple_name (COMMA simple_name)* sig_ext? LBRACE (decl (COMMA decl)*)? RBRACE block_expr?
+sig_decl ::= K_ABSTRACT? mult? K_SIG simple_name (COMMA simple_name)* sig_ext? decls_block block_expr?
+decls_block ::= LBRACE (decl (COMMA decl)*)? RBRACE { implements="dev.necauqua.plugins.alloy.psi.PsiBlock" }
+
 private sig_ext ::= K_EXTENDS qual_name | K_IN qual_name (PLUS qual_name)*
 mult ::= K_LONE | K_SOME | K_ONE
 
 decl ::= K_DISJ? simple_name (COMMA simple_name)* COLON K_DISJ? expr
 fact_decl ::= K_FACT simple_name? block_expr
 pred_decl ::= K_PRED (qual_name DOT)? simple_name para_decls? block_expr
-fun_decl ::= K_FUN (qual_name DOT)? simple_name para_decls? COLON expr { expr }
+fun_decl ::= K_FUN (qual_name DOT)? simple_name para_decls? COLON expr fun_block
+fun_block ::= LBRACE expr RBRACE { implements="dev.necauqua.plugins.alloy.psi.PsiBlock" }
 
 para_decls ::= LPAREN (decl (COMMA decl)*)? RPAREN | LBRACKET (decl (COMMA decl)*)? RBRACKET
 
@@ -142,7 +145,7 @@ quantification_expr ::= quant decl (COMMA decl)* (block_expr | BAR expr)
 
 decls_expr ::= LBRACE decl (COMMA decl)* (block_expr | BAR expr) RBRACE
 
-block_expr ::= LBRACE expr* RBRACE
+block_expr ::= LBRACE expr* RBRACE { implements="dev.necauqua.plugins.alloy.psi.PsiBlock" }
 
 // tightest is lowest I guess (I am not yet entirely sure, but it works that way)
 

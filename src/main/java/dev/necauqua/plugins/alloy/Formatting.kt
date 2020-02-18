@@ -10,34 +10,50 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
-import dev.necauqua.plugins.alloy.psi.Types
+import dev.necauqua.plugins.alloy.psi.*
 
-class SimpleBlock constructor(
-    node: ASTNode, wrap: Wrap?, alignment: Alignment?,
-    private val spacingBuilder: SpacingBuilder
+class BasicBlock(
+    node: ASTNode, wrap: Wrap?, alignment: Alignment?
 ) : AbstractBlock(node, wrap, alignment) {
 
     override fun buildChildren(): List<Block> {
         val blocks = mutableListOf<Block>()
         var child = myNode.firstChildNode
         while (child != null) {
-            if (child.elementType !== WHITE_SPACE) {
-                val block: Block = SimpleBlock(
-                    child, Wrap.createWrap(NONE, false), Alignment.createAlignment(),
-                    spacingBuilder
+            val psi = child.psi
+            if (psi is Decl || psi is Expr || psi.parent is PsiBlock) {
+                blocks += BlockBlock(
+                    child, Wrap.createWrap(NONE, false), Alignment.createAlignment()
                 )
-                blocks.add(block)
+            } else if (child.elementType !== WHITE_SPACE) {
+                blocks += BasicBlock(
+                    child, Wrap.createWrap(NONE, false), Alignment.createAlignment()
+                )
             }
             child = child.treeNext
         }
         return blocks
     }
 
+
     override fun getIndent(): Indent? = Indent.getNoneIndent()
 
-    override fun getSpacing(child1: Block?, child2: Block): Spacing? = spacingBuilder.getSpacing(this, child1, child2)
+    override fun getSpacing(child1: Block?, child2: Block): Spacing? = null
 
-    override fun isLeaf(): Boolean = myNode.firstChildNode == null
+    override fun isLeaf(): Boolean = true
+}
+
+class BlockBlock(
+    node: ASTNode, wrap: Wrap?, alignment: Alignment?
+) : AbstractBlock(node, wrap, alignment) {
+
+    override fun buildChildren(): List<Block> = emptyList()
+
+    override fun getIndent(): Indent? = Indent.getNormalIndent(true)
+
+    override fun getSpacing(child1: Block?, child2: Block): Spacing? = null
+
+    override fun isLeaf(): Boolean = true
 }
 
 class FormattingModelBuilder : FormattingModelBuilder {
@@ -45,20 +61,13 @@ class FormattingModelBuilder : FormattingModelBuilder {
         return FormattingModelProvider
             .createFormattingModelForPsiFile(
                 element.containingFile,
-                SimpleBlock(
+                BasicBlock(
                     element.node,
                     Wrap.createWrap(NONE, false),
-                    Alignment.createAlignment(),
-                    createSpaceBuilder(settings)
+                    Alignment.createAlignment()
                 ),
                 settings
             )
-    }
-
-    private fun createSpaceBuilder(settings: CodeStyleSettings): SpacingBuilder {
-        return SpacingBuilder(settings, AlloyLanguage)
-            .around(Types.EQ)
-            .spaceIf(settings.getCommonSettings(AlloyLanguage.id).SPACE_AROUND_EQUALITY_OPERATORS)
     }
 
     override fun getRangeAffectingIndent(file: PsiFile?, offset: Int, elementAtOffset: ASTNode?): TextRange? = null
