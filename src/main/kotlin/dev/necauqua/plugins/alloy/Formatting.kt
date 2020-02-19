@@ -1,8 +1,6 @@
 package dev.necauqua.plugins.alloy
 
-import com.intellij.application.options.CodeStyleAbstractConfigurable
-import com.intellij.application.options.CodeStyleAbstractPanel
-import com.intellij.application.options.TabbedLanguageCodeStylePanel
+import com.intellij.application.options.*
 import com.intellij.formatting.*
 import com.intellij.formatting.FormattingModelBuilder
 import com.intellij.formatting.Indent
@@ -22,6 +20,9 @@ class ScanBlock(node: ASTNode) : AbstractBlock(node, Wrap.createWrap(NONE, false
 
     override fun buildChildren(): List<Block> {
         val blocks = mutableListOf<Block>()
+
+//        PsiTreeUtil.findChildrenOfType(node.psi, PsiBlock::class.java)
+
         var child = myNode.firstChildNode
         while (child != null) {
             if (child.elementType != WHITE_SPACE) {

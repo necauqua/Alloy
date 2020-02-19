@@ -91,12 +91,12 @@ quant ::= K_ALL | K_NO | K_SUM | K_LONE | K_SOME | K_ONE
 qual_name ::= qual_prefix simple_name
 qual_prefix ::= (K_THIS NAME_SEP)? (qual_name_part NAME_SEP)*
 qual_name_part ::= NAME {
-    implements = "com.intellij.psi.PsiNamedElement"
-    methods=[getReference getName setName]
+    implements = "com.intellij.psi.PsiNameIdentifierOwner"
+    methods=[getReference getName setName getNameIdentifier]
 }
 simple_name ::= NAME {
-    implements = "com.intellij.psi.PsiNamedElement"
-    methods=[getReference getName setName]
+    implements = "com.intellij.psi.PsiNameIdentifierOwner"
+    methods=[getReference getName setName getNameIdentifier getPresentation]
 }
 
 // --- commented stuff from above rewritten for LR to work,

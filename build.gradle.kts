@@ -20,6 +20,7 @@ repositories {
 }
 
 dependencies {
+    implementation(files("alloy.jar"))
     implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.3.61")
 }
 
@@ -44,8 +45,6 @@ intellij {
     version = "2019.3"
 }
 
-
-
 val generateLexer = task<GenerateLexer>("generateLexer") {
     source = "src/main/grammars/lexer.flex"
     targetDir = "src/main/gen/dev/necauqua/plugins/alloy"
@@ -61,10 +60,14 @@ val generateParser = task<GenerateParser>("generateParser") {
     purgeOldFiles = true
 }
 
-//tasks.withType<KotlinCompile> {
-//    dependsOn(generateLexer, generateParser)
-//}
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
-//patchPluginXml {
-//    version = project.version
-//}
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+//    dependsOn(generateLexer, generateParser)
+}

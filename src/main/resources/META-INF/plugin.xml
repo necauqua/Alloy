@@ -38,6 +38,12 @@
         <lang.elementManipulator implementationClass="dev.necauqua.plugins.alloy.SimpleNameManipulator" forClass="dev.necauqua.plugins.alloy.psi.SimpleName"/>
         <lang.elementManipulator implementationClass="dev.necauqua.plugins.alloy.QualNamePartManipulator" forClass="dev.necauqua.plugins.alloy.psi.QualNamePart"/>
 
+        <annotator implementationClass="dev.necauqua.plugins.alloy.Annotator" language="alloy"/>
+
+        <gotoClassContributor implementation="dev.necauqua.plugins.alloy.GotoClassContributor"/>
+
+        <additionalLibraryRootsProvider implementation="dev.necauqua.plugins.alloy.DefaultLibraryProvider"/>
+
         <codeStyleSettingsProvider implementation="dev.necauqua.plugins.alloy.CodeStyleSettingsProvider"/>
         <langCodeStyleSettingsProvider implementation="dev.necauqua.plugins.alloy.SimpleLanguageCodeStyleSettingsProvider"/>
 

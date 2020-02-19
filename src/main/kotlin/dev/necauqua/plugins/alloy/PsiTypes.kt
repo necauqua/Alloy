@@ -12,13 +12,13 @@ class ElementType(debugName: String) : IElementType(debugName, AlloyLanguage)
 
 class AlloyFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, AlloyLanguage) {
 
-    val moduleDecl: ModuleDecl?
+    inline val moduleDecl: ModuleDecl?
         get() = findChildByClass(ModuleDecl::class.java)
 
-    val imports: Array<Import>
+    inline val imports: Array<Import>
         get() = findChildrenByClass(Import::class.java)
 
-    val paragraphs: Array<Paragraph>
+    inline val paragraphs: Array<Paragraph>
         get() = findChildrenByClass(Paragraph::class.java)
 
     override fun getFileType(): FileType = AlloyFileType

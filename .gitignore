@@ -1,9 +1,17 @@
 
+# idea and gradle metafolders, build outputs
 /.idea
 /.gradle
 /build
 /out
 
+# generated parser and lexer sources
 /src/main/gen
+
+# Grammar-Kit plugin gets and uses these
 /idea-flex.skeleton
 /jflex-*.jar
+
+# gathered via the ./get_alloy.sh script
+/alloy.jar
+/alloy-src.zip

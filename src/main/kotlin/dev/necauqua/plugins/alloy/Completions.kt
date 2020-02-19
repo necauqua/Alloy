@@ -33,7 +33,7 @@ class SimpleCompletionContributor : CompletionContributor() {
 ////                .andNot(psiElement().afterSibling(psiElement(Paragraph::class.java)))
 //
 //                .basic { params, _, result ->
-//                    val name = params.originalFile.name.removeSuffix(".als")
+//                    val name = params.originalFile.virtualFile.nameWithoutExtension
 //                    result.addElement(LookupElementBuilder.create("module")
 //                            .bold()
 //                            .withTailText(" $name")

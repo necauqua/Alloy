@@ -8,8 +8,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory
-import com.intellij.openapi.options.colors.AttributesDescriptor
-import com.intellij.openapi.options.colors.ColorDescriptor
+import com.intellij.openapi.options.colors.*
 import com.intellij.openapi.options.colors.ColorSettingsPage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -72,7 +71,7 @@ private val BRACKETS = arrayOf(createTextAttributesKey("ALLOY_BRACKETS", Default
 
 private val DOT = arrayOf(createTextAttributesKey("ALLOY_DOT", DefaultLanguageHighlighterColors.DOT))
 
-private val BAD_CHARACTER = arrayOf(createTextAttributesKey("ALLOY_BAD_CHARACTER", HighlighterColors.BAD_CHARACTER))
+/*private*/ val BAD_CHARACTER = arrayOf(createTextAttributesKey("ALLOY_BAD_CHARACTER", HighlighterColors.BAD_CHARACTER))
 
 object SyntaxHighlighter : SyntaxHighlighter {
     override fun getTokenHighlights(tokenType: IElementType): Array<out TextAttributesKey> =
@@ -114,7 +113,7 @@ private val DESCRIPTORS = arrayOf(
 )
 
 class ColorSettingsPage : ColorSettingsPage {
-    override fun getIcon(): Icon? = AlloyFileType.ICON
+    override fun getIcon(): Icon? = Icons.ALLOY_ICON
 
     override fun getHighlighter(): SyntaxHighlighter = SyntaxHighlighter
 
