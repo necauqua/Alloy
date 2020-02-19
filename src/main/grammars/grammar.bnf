@@ -1,5 +1,5 @@
 {
-  parserClass="dev.necauqua.plugins.alloy.parser.AlloyParser"
+  parserClass="dev.necauqua.plugins.alloy.AlloyParser"
 
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
@@ -34,7 +34,7 @@
 
   extends(".*_expr")=expr
 
-  mixin("(?:sig|fact|pred|fun|assert|cmd)_decl") = "dev.necauqua.plugins.alloy.psi.Paragraph"
+  implements("(?:sig|fact|pred|fun|assert|cmd)_decl") = "dev.necauqua.plugins.alloy.psi.Paragraph"
 }
 
 alloy_module ::= module_decl? import* paragraph*
@@ -43,9 +43,9 @@ module_decl ::= K_MODULE qual_name (simple_name (simple_name COMMA)*)?
 import ::= K_OPEN qual_name import_params? (K_AS simple_name)?
 import_params ::= LBRACKET (qual_name (COMMA qual_name)*)? RBRACKET
 
-private paragraph ::= (sig_decl | fact_decl | pred_decl | fun_decl | assert_decl | cmd_decl)
+private paragraph ::= sig_decl | fact_decl | pred_decl | fun_decl | assert_decl | cmd_decl
 
-sig_decl ::= K_ABSTRACT? mult? K_SIG simple_name (COMMA simple_name)* sig_ext? rel_decls block_expr?
+sig_decl ::= (K_ABSTRACT mult? | mult? K_ABSTRACT?) K_SIG simple_name (COMMA simple_name)* sig_ext? rel_decls block_expr?
 rel_decls ::= LBRACE (relation_decl (COMMA relation_decl)*)? RBRACE { implements="dev.necauqua.plugins.alloy.psi.PsiBlock" }
 
 sig_ext ::= K_EXTENDS qual_name | K_IN qual_name (PLUS qual_name)*

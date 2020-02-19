@@ -30,15 +30,22 @@
         <lang.parserDefinition implementationClass="dev.necauqua.plugins.alloy.ParserDefinition" language="alloy"/>
         <lang.syntaxHighlighterFactory implementationClass="dev.necauqua.plugins.alloy.SyntaxHighlighterFactory"
                                        language="alloy"/>
+        <lang.braceMatcher implementationClass="dev.necauqua.plugins.alloy.components.BraceMatcher" language="alloy"/>
+        <lang.formatter implementationClass="dev.necauqua.plugins.alloy.FormattingModelBuilder" language="alloy"/>
+        <lang.commenter implementationClass="dev.necauqua.plugins.alloy.components.Commenter" language="alloy"/>
+        <lang.foldingBuilder implementationClass="dev.necauqua.plugins.alloy.components.FoldingBuilder" language="alloy"/>
+
+        <lang.elementManipulator implementationClass="dev.necauqua.plugins.alloy.SimpleNameManipulator" forClass="dev.necauqua.plugins.alloy.psi.SimpleName"/>
+        <lang.elementManipulator implementationClass="dev.necauqua.plugins.alloy.QualNamePartManipulator" forClass="dev.necauqua.plugins.alloy.psi.QualNamePart"/>
+
+        <codeStyleSettingsProvider implementation="dev.necauqua.plugins.alloy.CodeStyleSettingsProvider"/>
+        <langCodeStyleSettingsProvider implementation="dev.necauqua.plugins.alloy.SimpleLanguageCodeStyleSettingsProvider"/>
+
         <colorSettingsPage implementation="dev.necauqua.plugins.alloy.ColorSettingsPage"/>
         <completion.contributor implementationClass="dev.necauqua.plugins.alloy.SimpleCompletionContributor"
                                 language="alloy"/>
-        <braceMatcher implementationClass="dev.necauqua.plugins.alloy.AdaptedBraceMatcher" filetype="alloy"/>
-        <lang.braceMatcher implementationClass="dev.necauqua.plugins.alloy.BraceMatcher" language="alloy"/>
-        <lang.formatter implementationClass="dev.necauqua.plugins.alloy.FormattingModelBuilder" language="alloy"/>
+        <braceMatcher implementationClass="dev.necauqua.plugins.alloy.components.AdaptedBraceMatcher" filetype="alloy"/>
 
-        <lang.commenter implementationClass="dev.necauqua.plugins.alloy.Commenter" language="alloy"/>
-        <lang.foldingBuilder implementationClass="dev.necauqua.plugins.alloy.FoldingBuilder" language="alloy"/>
-        <psi.referenceContributor implementation="dev.necauqua.plugins.alloy.ReferenceContributor" language="alloy"/>
+<!--        <psi.referenceContributor implementation="dev.necauqua.plugins.alloy.ReferenceContributor" language="alloy"/>-->
     </extensions>
 </idea-plugin>

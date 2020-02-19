@@ -14,7 +14,6 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
-import dev.necauqua.plugins.alloy.parser.AlloyParser
 import dev.necauqua.plugins.alloy.psi.Types
 
 class ParserDefinition : ParserDefinition {
