@@ -4,33 +4,35 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReference
 import com.intellij.psi.PsiReferenceBase
+import com.intellij.psi.util.elementType
 import com.intellij.util.IncorrectOperationException
 import dev.necauqua.plugins.alloy.AlloyFile
 
 object PsiImplUtil {
 
+    private fun <T: PsiElement> T.reference(ref: () -> PsiElement?): PsiReferenceBase<T> {
+        return object : PsiReferenceBase<T>(this) {
+            override fun resolve(): PsiElement? = ref()
+        }
+    }
+
     @JvmStatic
     fun getReference(element: SimpleName): PsiReference? {
         val parent = element.parent
-        if (parent is QualName) {
-            val grandparent = parent.parent
-            if (grandparent is Import) {
-                val psiManager = PsiManager.getInstance(element.project)
-                return object : PsiReferenceBase<SimpleName>(element) {
-                    override fun resolve(): PsiElement? {
-                        val file = element.containingFile.virtualFile
-                                .parent
-                                ?.findFileByRelativePath("${parent.text}.als")
-                                ?: return null
+        if (parent.parent.elementType == Types.IMPORT) {
+            val psiManager = PsiManager.getInstance(element.project)
+            return element.reference {
+                val file = element.containingFile.virtualFile
+                        .parent
+                        ?.findFileByRelativePath("${parent.text}.als")
+                        ?: return@reference null
 
-                        val psiFile = psiManager
-                                .findFile(file)
-                                as? AlloyFile
-                                ?: return null
+                val psiFile = psiManager
+                        .findFile(file)
+                        as? AlloyFile
+                        ?: return@reference null
 
-                        return psiFile.moduleDecl?.qualName ?: psiFile
-                    }
-                }
+                psiFile.moduleDecl?.qualName ?: psiFile
             }
         }
         return null
@@ -49,22 +51,16 @@ object PsiImplUtil {
     @JvmStatic
     fun getReference(element: QualNamePart): PsiReference? {
         val prefix = element.parent as QualPrefix
-        val parent = prefix.parent
-        if (parent is QualName && parent.parent is Import) {
+        if (prefix.parent.parent.elementType == Types.IMPORT) {
             val psiManager = PsiManager.getInstance(element.project)
-            return object : PsiReferenceBase<QualNamePart>(element) {
-                override fun resolve(): PsiElement? {
-                    val dir = (prefix.qualNamePartList.asSequence().takeWhile { it != element } + element).joinToString("/") { it.text }
 
-                    println(dir)
+            return element.reference {
+                val file = element.containingFile.virtualFile
+                        .parent
+                        ?.findFileByRelativePath((prefix.qualNamePartList.asSequence().takeWhile { it != element } + element).joinToString("/") { it.text })
+                        ?: return@reference null
 
-                    val file = element.containingFile.virtualFile
-                            .parent
-                            ?.findFileByRelativePath(dir)
-                            ?: return null
-
-                    return psiManager.findDirectory(file)
-                }
+                psiManager.findDirectory(file)
             }
         }
         return null
