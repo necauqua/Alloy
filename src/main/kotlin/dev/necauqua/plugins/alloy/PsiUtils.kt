@@ -20,9 +20,9 @@ object PsiUtils {
             val root = psiManager.findFile(file) as? AlloyFile ?: continue
             val prefix = "${file.nameWithoutExtension}/"
             root.findChildrenByClass(SigDecl::class.java)
-                .asSequence()
-                .flatMap { it.simpleNameList.asSequence() }
-                .mapTo(result) { "$prefix/${it.text}" to it }
+                    .asSequence()
+                    .flatMap { it.simpleNameList.asSequence() }
+                    .mapTo(result) { "$prefix/${it.text}" to it }
         }
         return result
     }
@@ -35,9 +35,9 @@ object PsiUtils {
             val file = psiManager.findFile(virtualFile) as? AlloyFile ?: continue
 
             file.findChildrenByClass(SigDecl::class.java)
-                .asSequence()
-                .flatMap { it.simpleNameList.asSequence() }
-                .mapTo(result) { prefix + it.text }
+                    .asSequence()
+                    .flatMap { it.simpleNameList.asSequence() }
+                    .mapTo(result) { prefix + it.text }
         }
         return result
     }
@@ -48,15 +48,15 @@ object PsiUtils {
     }
 
     fun createFile(project: Project, text: String): AlloyFile =
-        PsiFileFactory.getInstance(project).createFileFromText("dummy.als", AlloyFileType, text) as AlloyFile
+            PsiFileFactory.getInstance(project).createFileFromText("dummy.als", AlloyFileType, text) as AlloyFile
 
     private fun buildModuleTree(project: Project, virtualFile: VirtualFile): List<Pair<String, VirtualFile>> {
 
         fun dfs(
-            psiManager: PsiManager,
-            virtualFile: VirtualFile,
-            known: MutableSet<String>,
-            result: MutableList<Pair<String, VirtualFile>>
+                psiManager: PsiManager,
+                virtualFile: VirtualFile,
+                known: MutableSet<String>,
+                result: MutableList<Pair<String, VirtualFile>>
         ) {
             val root = psiManager.findFile(virtualFile) as? AlloyFile ?: return
             val dir = virtualFile.parent
@@ -66,7 +66,10 @@ object PsiUtils {
                     continue
                 }
                 val pkg = import.simpleName?.text ?: name
-                val file = dir.findFileByRelativePath("$name.als") ?: continue
+                val fileName = "$name.als"
+                val file = dir.findFileByRelativePath(fileName)
+                        ?: AlloyLibrary.defaultSourceRoot?.findFileByRelativePath(fileName)
+                        ?: continue
                 result += "$pkg/" to file
                 dfs(psiManager, file, known, result)
             }

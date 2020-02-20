@@ -2,10 +2,16 @@ package dev.necauqua.plugins.alloy.psi
 
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.psi.*
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiManager
+import com.intellij.psi.PsiReference
+import com.intellij.psi.PsiReferenceBase
 import com.intellij.psi.util.elementType
 import com.intellij.util.IncorrectOperationException
-import dev.necauqua.plugins.alloy.*
+import dev.necauqua.plugins.alloy.AlloyFile
+import dev.necauqua.plugins.alloy.AlloyLibrary
+import dev.necauqua.plugins.alloy.Icons
+import dev.necauqua.plugins.alloy.PsiUtils
 import javax.swing.Icon
 
 
@@ -24,14 +30,15 @@ object PsiImplUtil {
             val psiManager = PsiManager.getInstance(element.project)
             return reference(element) {
                 val file = containingFile.virtualFile
-                    .parent
-                    ?.findFileByRelativePath("${parent.text}.als")
-                    ?: return@reference null
+                        .parent
+                        ?.findFileByRelativePath("${parent.text}.als")
+                        ?: AlloyLibrary.defaultSourceRoot?.findFileByRelativePath("${parent.text}.als")
+                        ?: return@reference null
 
                 val psiFile = psiManager
-                    .findFile(file)
-                    as? AlloyFile
-                    ?: return@reference null
+                        .findFile(file)
+                        as? AlloyFile
+                        ?: return@reference null
 
                 psiFile.moduleDecl?.qualName ?: psiFile
             }
@@ -61,11 +68,11 @@ object PsiImplUtil {
                 val psiFile = element.containingFile
                 val file = psiFile.virtualFile
                 val relativePath = (ProjectRootManager.getInstance(element.project)
-                    .fileIndex
-                    .getSourceRootForFile(file)
-                    ?.path
-                    ?.let { file.path.substring(it.length + 1) }
-                    ?: file.path)
+                        .fileIndex
+                        .getSourceRootForFile(file)
+                        ?.path
+                        ?.let { file.path.substring(it.length + 1) }
+                        ?: file.path)
 
                 val thing = if (element.parent.elementType == Types.SIG_DECL) {
                     "Sig ${element.text}"
@@ -89,12 +96,10 @@ object PsiImplUtil {
         if (prefix.parent.parent.elementType == Types.IMPORT) {
             val psiManager = PsiManager.getInstance(element.project)
             return reference(element) {
-                val file = containingFile.virtualFile
-                    .parent
-                    ?.findFileByRelativePath((prefix.qualNamePartList.asSequence().takeWhile { it != element } + element).joinToString(
-                        "/"
-                    ) { it.text })
-                    ?: return@reference null
+                val file = containingFile.virtualFile.parent?.let {
+                    val path = (prefix.qualNamePartList.asSequence().takeWhile { it != element } + element).joinToString("/") { it.text }
+                    it.findFileByRelativePath(path) ?: AlloyLibrary.defaultSourceRoot?.findFileByRelativePath(path)
+                } ?: return@reference null
                 psiManager.findDirectory(file)
             }
         }

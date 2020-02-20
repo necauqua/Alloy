@@ -1,9 +1,9 @@
 #!/bin/bash
 
-VERSION="v5.1.0"
+VERSION=$(test -z "$1" && echo "v5.1.0" || echo "$1")
 
-if ! which curl &> /dev/null; then
-    echo "This script requires cURL to be installed and in PATH" 1>&2 
+if ! command -v curl > /dev/null; then
+    echo "This script requires cURL to be installed and in PATH" 1>&2
     exit 1
 fi
 

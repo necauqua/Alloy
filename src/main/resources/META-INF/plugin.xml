@@ -52,6 +52,8 @@
                                 language="alloy"/>
         <braceMatcher implementationClass="dev.necauqua.plugins.alloy.components.AdaptedBraceMatcher" filetype="alloy"/>
 
+        <configurationType implementation="dev.necauqua.plugins.alloy.runner.AlloyConfigurationType"/>
+
 <!--        <psi.referenceContributor implementation="dev.necauqua.plugins.alloy.ReferenceContributor" language="alloy"/>-->
     </extensions>
 </idea-plugin>

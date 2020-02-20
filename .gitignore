@@ -5,13 +5,17 @@
 /build
 /out
 
-# generated parser and lexer sources
+# intellij, WHAT IS THE POINT OF THAT '.idea' METAFOLDER IF YOU PUT THIS NOT IN IT OMFG
+# it does that from time to time :(
+*.iml
+
+# the generated parser and lexer sources
 /src/main/gen
 
 # Grammar-Kit plugin gets and uses these
 /idea-flex.skeleton
 /jflex-*.jar
 
-# gathered via the ./get_alloy.sh script
+# gathered via the './get_alloy.sh' script
 /alloy.jar
 /alloy-src.zip

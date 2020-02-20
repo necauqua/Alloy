@@ -23,21 +23,21 @@ object AlloyLibrary : SyntheticLibrary(), ItemPresentation {
 
     override fun getPresentableText(): String? = "Alloy stdlib"
 
-    val files: List<VirtualFile> by lazy {
+    val defaultSourceRoot: VirtualFile? by lazy {
         // really weird way to get this
         // works for now, later will do something better
         AlloyCore::class.java.classLoader.getResource("models")
-            ?.toString()
-            ?.let { it.substring(9, it.length - 9) }
-            ?.takeIf { it.endsWith(".jar") }
-            ?.let { LocalFileSystem.getInstance().findFileByPath(it) }
-            ?.takeIf { it.isValid }
-            ?.let { JarFileSystem.getInstance().getRootByLocal(it) }
-            ?.takeIf { it.isValid }
-            ?.findChild("models")
-            ?.let(::listOf)
-            ?: emptyList()
+                ?.toString()
+                ?.let { it.substring(9, it.length - 9) } // strip the "jar:file:" prefix and "!/models/" suffix
+                ?.takeIf { it.endsWith(".jar") }
+                ?.let { LocalFileSystem.getInstance().findFileByPath(it) }
+                ?.takeIf { it.isValid }
+                ?.let { JarFileSystem.getInstance().getRootByLocal(it) }
+                ?.takeIf { it.isValid }
+                ?.findChild("models")
     }
+
+    private val files: List<VirtualFile> by lazy { defaultSourceRoot?.let(::listOf) ?: emptyList() }
 
     override fun getSourceRoots(): Collection<VirtualFile> = files
 
